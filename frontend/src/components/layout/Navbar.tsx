@@ -3,6 +3,7 @@ import { Button } from "../../components/ui/button";
 import { Input } from "../../components/ui/input";
 import { Avatar, AvatarFallback } from "../../components/ui/avatar";
 import { currentUser } from "../../data/dummyData"; 
+import { ThemeToggle } from "../../components/ui/theme-toggle";
 
 interface NavbarProps {
   onToggleSidebar: () => void;
@@ -33,6 +34,7 @@ export const Navbar = ({ onToggleSidebar }: NavbarProps) => {
         </div>
 
         <div className="flex items-center space-x-2">
+          <ThemeToggle />
           <Button variant="ghost" size="sm">
             <Bell className="h-4 w-4" />
           </Button>
