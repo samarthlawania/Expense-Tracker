@@ -1,45 +1,49 @@
 require('dotenv').config();
 const express = require('express');
-const app = express();
+const helmet = require('helmet');
+const cors = require('cors');
+const morgan = require('morgan');
 const errorHandler = require('./middlewares/error.middleware');
-const { sequelize } = require('./models'); // Sequelize models
-const routes = require('./routes'); // Import your routes
+const routes = require('./routes');
+const { sequelize } = require('./models');
 
-// Middleware to parse JSON
+const app = express();
+
+// Middleware
+app.use(helmet());
+app.use(cors());
+app.use(morgan('dev'));
 app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
 
-// Register your routes
+// Register routes
 app.use('/api', routes);
 
-// Root route for quick check
+// Root route
 app.get('/', (req, res) => {
   res.send('Smart Expense Tracker API running');
 });
 
-// 404 handler (must be after all routes)
+// 404 handler
 app.use((req, res, next) => {
   const error = new Error(`Not Found - ${req.originalUrl}`);
   error.statusCode = 404;
   next(error);
 });
- 
+
 // Global error handler
 app.use(errorHandler);
 
-// Port from environment or default
 const PORT = process.env.PORT || 3000;
-app.listen(PORT, () => {
-  console.log(`Server running on port ${PORT}`);
-});
-// Sync Sequelize models and start server
-// sequelize
-//   .sync({ alter: true }) // change to { force: true } only if you want to drop tables
-//   .then(() => {
-//     console.log('Database synced successfully');
-//     app.listen(PORT, () => {
-//       console.log(`Server running on port ${PORT}`);
-//     });
-//   })
-//   .catch((err) => {
-//     console.error('Unable to connect to database:', err);
-//   });
+
+sequelize
+  .sync({ alter: true })
+  .then(() => {
+    console.log('Database synced successfully');
+    app.listen(PORT, () => {
+      console.log(`Server running on port ${PORT}`);
+    });
+  })
+  .catch((err) => {
+    console.error('Unable to connect to the database:', err);
+  });

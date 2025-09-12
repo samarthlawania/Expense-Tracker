@@ -1,27 +1,42 @@
 'use strict';
-const { Model } = require('sequelize');
-module.exports = (sequelize, DataTypes) => {
-  class User extends Model {
-    static associate(models) {
-      User.hasMany(models.Expense, { foreignKey: 'userId' });
-      User.hasMany(models.Budget, { foreignKey: 'userId' });
-    }
-  }
-  User.init({
-    id: {
-      type: DataTypes.UUID,
-      defaultValue: DataTypes.UUIDV4,
-      primaryKey: true
-    },
-    name: DataTypes.STRING,
-    email: { type: DataTypes.STRING, unique: true, allowNull: false },
-    password: DataTypes.STRING,
-    createdAt: { type: DataTypes.DATE, defaultValue: DataTypes.NOW }
-  }, {
-    sequelize,
-    modelName: 'User',
-    tableName: 'users',
-    timestamps: false
+const fs = require('fs');
+const path = require('path');
+const { Sequelize, DataTypes } = require('sequelize');
+const process = require('process');
+const basename = path.basename(__filename);
+const env = process.env.NODE_ENV || 'development';
+const config = require(__dirname + '/../config/config.js')[env];
+const db = {};
+
+let sequelize;
+if (config.use_env_variable) {
+  sequelize = new Sequelize(process.env[config.use_env_variable], config);
+} else {
+  sequelize = new Sequelize(config.database, config.username, config.password, config);
+}
+
+fs
+  .readdirSync(__dirname)
+  .filter(file => {
+    return (
+      file.indexOf('.') !== 0 &&
+      file !== basename &&
+      file.slice(-3) === '.js' &&
+      file.indexOf('.test.js') === -1
+    );
+  })
+  .forEach(file => {
+    const model = require(path.join(__dirname, file))(sequelize, DataTypes);
+    db[model.name] = model;
   });
-  return User;
-};
+
+Object.keys(db).forEach(modelName => {
+  if (db[modelName].associate) {
+    db[modelName].associate(db);
+  }
+});
+
+db.sequelize = sequelize;
+db.Sequelize = Sequelize;
+
+module.exports = db;
