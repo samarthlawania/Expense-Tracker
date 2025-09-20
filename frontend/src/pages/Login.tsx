@@ -1,21 +1,58 @@
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { Button } from "../components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "../components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+} from "../components/ui/card";
 import { Input } from "../components/ui/input";
 import { Label } from "../components/ui/label";
 import { CreditCard, Eye, EyeOff } from "lucide-react";
+import { useToast } from "../hooks/use-toast";
+import { api } from "../services/api";
 
 export const Login = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
   const navigate = useNavigate();
+  const { toast } = useToast();
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    // Mock login - redirect to dashboard
-    navigate("/dashboard");
+    setIsLoading(true);
+
+    try {
+      const data = await api.login(email, password);
+
+      if (data.token) {
+        localStorage.setItem("token", data.token);
+        localStorage.setItem("user", JSON.stringify(data.user));
+        toast({
+          title: "Login Successful",
+          description: "Redirecting to dashboard...",
+        });
+        navigate("/dashboard");
+      } else {
+        toast({
+          title: "Login Failed",
+          description: data.message || "Invalid credentials",
+          variant: "destructive",
+        });
+      }
+    } catch (error) {
+      toast({
+        title: "Login Failed",
+        description: "Could not connect to the server. Please try again later.",
+        variant: "destructive",
+      });
+      console.error("Login error:", error);
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (
@@ -94,8 +131,12 @@ export const Login = () => {
                   Forgot password?
                 </Link>
               </div>
-              <Button type="submit" className="w-full primary-gradient">
-                Sign In
+              <Button
+                type="submit"
+                className="w-full primary-gradient"
+                disabled={isLoading}
+              >
+                {isLoading ? "Signing In..." : "Sign In"}
               </Button>
             </form>
           </CardContent>
@@ -105,7 +146,10 @@ export const Login = () => {
         <div className="text-center">
           <p className="text-sm text-muted-foreground">
             Don't have an account?{" "}
-            <Link to="/signup" className="text-primary hover:underline font-medium">
+            <Link
+              to="/signup"
+              className="text-primary hover:underline font-medium"
+            >
               Sign up
             </Link>
           </p>

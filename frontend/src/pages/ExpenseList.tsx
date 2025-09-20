@@ -1,26 +1,44 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Button } from "../components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "../components/ui/card";
 import { Input } from "../components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "../components/ui/select";
 import { Badge } from "../components/ui/badge";
 import { Search, Download, Filter, Plus } from "lucide-react";
-import { dummyExpenses, categories } from "../data/dummyData";
+import { categories } from "../data/dummyData";
 import { Link } from "react-router-dom";
+import { api } from "../services/api";
 
 export const ExpenseList = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const [categoryFilter, setCategoryFilter] = useState("all");
   const [typeFilter, setTypeFilter] = useState("all");
+  const [expenses, setExpenses] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchExpenses = async () => {
+      try {
+        const filters = {};
+        if (categoryFilter !== "all") filters.category = categoryFilter;
+        const data = await api.getExpenses(filters);
+        setExpenses(data);
+      } catch (error) {
+        console.error('Failed to fetch expenses:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchExpenses();
+  }, [categoryFilter]);
 
   // Filter expenses based on search and filters
-  const filteredExpenses = dummyExpenses.filter(expense => {
-    const matchesSearch = expense.description.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         expense.category.toLowerCase().includes(searchTerm.toLowerCase());
-    const matchesCategory = categoryFilter === "all" || expense.category === categoryFilter;
+  const filteredExpenses = expenses.filter(expense => {
+    const matchesSearch = expense.description?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                         expense.category?.toLowerCase().includes(searchTerm.toLowerCase());
     const matchesType = typeFilter === "all" || expense.type === typeFilter;
     
-    return matchesSearch && matchesCategory && matchesType;
+    return matchesSearch && matchesType;
   });
 
   const exportToCSV = () => {
@@ -123,13 +141,18 @@ export const ExpenseList = () => {
           </CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="space-y-3">
-            {filteredExpenses.length === 0 ? (
-              <div className="text-center py-8 text-muted-foreground">
-                No transactions found matching your criteria.
-              </div>
-            ) : (
-              filteredExpenses.map((expense) => (
+          {loading ? (
+            <div className="text-center py-8 text-muted-foreground">
+              Loading transactions...
+            </div>
+          ) : (
+            <div className="space-y-3">
+              {filteredExpenses.length === 0 ? (
+                <div className="text-center py-8 text-muted-foreground">
+                  No transactions found matching your criteria.
+                </div>
+              ) : (
+                filteredExpenses.map((expense) => (
                 <div
                   key={expense.id}
                   className="flex items-center justify-between rounded-lg border p-4 transition-colors hover:bg-accent/50"
@@ -155,12 +178,13 @@ export const ExpenseList = () => {
                       ? 'text-success' 
                       : 'text-foreground'
                   }`}>
-                    {expense.type === 'income' ? '+' : '-'}${expense.amount.toLocaleString()}
+                    {expense.type === 'income' ? '+' : '-'}${parseFloat(expense.amount).toLocaleString()}
                   </div>
                 </div>
-              ))
-            )}
-          </div>
+                ))
+              )}
+            </div>
+          )}
         </CardContent>
       </Card>
     </div>

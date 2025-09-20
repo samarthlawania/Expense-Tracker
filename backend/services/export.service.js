@@ -1,52 +1,38 @@
 const ExcelJS = require('exceljs');
-const createCsvWriter = require('csv-writer').createObjectCsvStringifier;
+const { Readable } = require('stream');
 
-async function exportToXLSX(expenses) {
+exports.exportToXLSX = async (expenses) => {
   const workbook = new ExcelJS.Workbook();
-  const sheet = workbook.addWorksheet('Expenses');
-  sheet.columns = [
-    { header: 'Date', key: 'date', width: 15 },
-    { header: 'Description', key: 'description', width: 40 },
-    { header: 'Amount', key: 'amount', width: 15 },
-    { header: 'Category', key: 'category', width: 20 },
-    { header: 'Recurring', key: 'isRecurring', width: 10 }
+  const worksheet = workbook.addWorksheet('Expenses');
+  
+  worksheet.columns = [
+    { header: 'Date', key: 'date', width: 12 },
+    { header: 'Description', key: 'description', width: 30 },
+    { header: 'Category', key: 'category', width: 15 },
+    { header: 'Type', key: 'type', width: 10 },
+    { header: 'Amount', key: 'amount', width: 12 }
   ];
-  expenses.forEach(e => {
-    sheet.addRow({
-      date: e.date,
-      description: e.description,
-      amount: e.amount,
-      category: e.category,
-      isRecurring: e.isRecurring ? 'Yes' : 'No'
+  
+  expenses.forEach(expense => {
+    worksheet.addRow({
+      date: expense.date,
+      description: expense.description,
+      category: expense.category,
+      type: expense.type,
+      amount: parseFloat(expense.amount)
     });
   });
-  const buffer = await workbook.xlsx.writeBuffer();
-  return buffer;
-}
+  
+  return await workbook.xlsx.writeBuffer();
+};
 
-async function exportToCSV(expenses) {
-  const csvStringifier = createCsvWriter({
-    header: [
-      { id: 'date', title: 'Date' },
-      { id: 'description', title: 'Description' },
-      { id: 'amount', title: 'Amount' },
-      { id: 'category', title: 'Category' },
-      { id: 'isRecurring', title: 'Recurring' }
-    ]
-  });
-  const records = expenses.map(e => ({
-    date: e.date,
-    description: e.description,
-    amount: e.amount,
-    category: e.category,
-    isRecurring: e.isRecurring ? 'Yes' : 'No'
-  }));
-  const csv = csvStringifier.getHeaderString() + csvStringifier.stringifyRecords(records);
-  const readable = require('stream').Readable();
-  readable._read = () => {};
-  readable.push(csv);
-  readable.push(null);
-  return readable;
-}
-
-module.exports = { exportToXLSX, exportToCSV };
+exports.exportToCSV = async (expenses) => {
+  const csvData = [
+    'Date,Description,Category,Type,Amount',
+    ...expenses.map(expense => 
+      `${expense.date},"${expense.description}",${expense.category},${expense.type},${expense.amount}`
+    )
+  ].join('\n');
+  
+  return Readable.from([csvData]);
+};

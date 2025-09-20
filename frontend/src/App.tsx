@@ -4,6 +4,7 @@ import { TooltipProvider } from "../src/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { Layout } from "./components/layout/Layout";
+import { ProtectedRoute } from "./components/layout/ProtectedRoute";
 import { Login } from "./pages/Login";
 import { Signup } from "./pages/Signup";
 import { Dashboard } from "./pages/Dashboard";
@@ -27,7 +28,11 @@ const App = () => (
           <Route path="/signup" element={<Signup />} />
           
           {/* Protected routes with layout */}
-          <Route element={<Layout />}>
+          <Route element={
+            <ProtectedRoute>
+              <Layout />
+            </ProtectedRoute>
+          }>
             <Route path="/dashboard" element={<Dashboard />} />
             <Route path="/add-expense" element={<AddExpense />} />
             <Route path="/expenses" element={<ExpenseList />} />

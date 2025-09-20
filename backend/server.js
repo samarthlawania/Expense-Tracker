@@ -11,17 +11,19 @@ const app = express();
 
 // Middleware
 app.use(helmet());
-app.use(cors());
+app.use(cors({
+  origin: 'http://localhost:8080',
+}));
 app.use(morgan('dev'));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
-
+ 
 // Register routes
 app.use('/api', routes);
 
 // Root route
 app.get('/', (req, res) => {
-  res.send('Smart Expense Tracker API running');
+  res.json({ message: 'Smart Expense Tracker API running', status: 'OK' });
 });
 
 // 404 handler
@@ -37,13 +39,19 @@ app.use(errorHandler);
 const PORT = process.env.PORT || 3000;
 
 sequelize
-  .sync({ alter: true })
+  .authenticate()
+  .then(() => {
+    console.log('Database connection established successfully.');
+    return sequelize.sync({ alter: true });
+  })
   .then(() => {
     console.log('Database synced successfully');
     app.listen(PORT, () => {
       console.log(`Server running on port ${PORT}`);
+      console.log(`Environment: ${process.env.NODE_ENV}`);
     });
   })
   .catch((err) => {
     console.error('Unable to connect to the database:', err);
+    process.exit(1);
   });

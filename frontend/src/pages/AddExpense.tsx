@@ -9,6 +9,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from ".
 import { Upload, Plus } from "lucide-react";
 import { categories } from "../data/dummyData";
 import { useToast } from "../hooks/use-toast";
+import { api } from "../services/api";
 
 export const AddExpense = () => {
   const [formData, setFormData] = useState({
@@ -19,30 +20,59 @@ export const AddExpense = () => {
     type: "expense" as "expense" | "income"
   });
   const [file, setFile] = useState<File | null>(null);
+  const [isLoading, setIsLoading] = useState(false);
   const navigate = useNavigate();
   const { toast } = useToast();
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    setIsLoading(true);
     
-    // Mock API call
-    toast({
-      title: "Transaction Added",
-      description: `Successfully added ${formData.type} of $${formData.amount}`,
-    });
+    try {
+      const expense = {
+        date: formData.date,
+        description: formData.description,
+        amount: parseFloat(formData.amount),
+        category: formData.category,
+        type: formData.type,
+        isRecurring: false
+      };
 
-    // Reset form
-    setFormData({
-      amount: "",
-      category: "",
-      description: "",
-      date: new Date().toISOString().split('T')[0],
-      type: "expense"
-    });
-    setFile(null);
-    
-    // Optionally navigate to expenses list
-    setTimeout(() => navigate("/expenses"), 1500);
+      const result = await api.createExpense(expense);
+      
+      if (result.id) {
+        toast({
+          title: "Transaction Added",
+          description: `Successfully added ${formData.type} of $${formData.amount}`,
+        });
+
+        // Reset form
+        setFormData({
+          amount: "",
+          category: "",
+          description: "",
+          date: new Date().toISOString().split('T')[0],
+          type: "expense"
+        });
+        setFile(null);
+        
+        setTimeout(() => navigate("/expenses"), 1500);
+      } else {
+        toast({
+          title: "Error",
+          description: result.message || "Failed to add transaction",
+          variant: "destructive",
+        });
+      }
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "Could not add transaction. Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   const handleChange = (field: string, value: string) => {
@@ -181,13 +211,18 @@ export const AddExpense = () => {
 
               {/* Submit Button */}
               <div className="flex space-x-4">
-                <Button type="submit" className="primary-gradient flex-1">
-                  Add Transaction
+                <Button 
+                  type="submit" 
+                  className="primary-gradient flex-1"
+                  disabled={isLoading}
+                >
+                  {isLoading ? "Adding..." : "Add Transaction"}
                 </Button>
                 <Button 
                   type="button" 
                   variant="outline" 
                   onClick={() => navigate("/expenses")}
+                  disabled={isLoading}
                 >
                   Cancel
                 </Button>

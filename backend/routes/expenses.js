@@ -1,15 +1,16 @@
 const express = require('express');
-const router = express.Router();
-const expenseController = require('../controllers/expense.controller');
-const auth = require('../middlewares/auth.middleware');
 const multer = require('multer');
+const expenseController = require('../controllers/expense.controller');
+const authMiddleware = require('../middlewares/auth.middleware');
+
+const router = express.Router();
 const upload = multer({ dest: 'uploads/' });
 
-router.use(auth);
+router.use(authMiddleware);
 
-router.get('/', expenseController.list); // GET /expenses
-router.post('/', expenseController.create); // POST /expenses
-router.post('/upload', upload.single('file'), expenseController.upload); // POST /expenses/upload
-router.get('/export', expenseController.export); // GET /expenses/export?format=xlsx|csv
+router.get('/', expenseController.list);
+router.post('/', expenseController.create);
+router.post('/upload', upload.single('file'), expenseController.upload);
+router.get('/export', expenseController.export);
 
 module.exports = router;

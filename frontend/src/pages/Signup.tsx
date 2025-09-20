@@ -5,6 +5,8 @@ import { Card, CardContent, CardHeader, CardTitle } from "../components/ui/card"
 import { Input } from "../components/ui/input";
 import { Label } from "../components/ui/label";
 import { CreditCard, Eye, EyeOff } from "lucide-react";
+import { useToast } from "../hooks/use-toast";
+import { api } from "../services/api";
 
 export const Signup = () => {
   const [showPassword, setShowPassword] = useState(false);
@@ -15,12 +17,48 @@ export const Signup = () => {
     password: "",
     confirmPassword: ""
   });
+  const [isLoading, setIsLoading] = useState(false);
   const navigate = useNavigate();
+  const { toast } = useToast();
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    // Mock signup - redirect to dashboard
-    navigate("/dashboard");
+    
+    if (formData.password !== formData.confirmPassword) {
+      toast({
+        title: "Password Mismatch",
+        description: "Passwords do not match",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    setIsLoading(true);
+    try {
+      const data = await api.signup(formData.name, formData.email, formData.password);
+      
+      if (data.user) {
+        toast({
+          title: "Account Created",
+          description: "Please login with your credentials",
+        });
+        navigate("/login");
+      } else {
+        toast({
+          title: "Signup Failed",
+          description: data.message || "Failed to create account",
+          variant: "destructive",
+        });
+      }
+    } catch (error) {
+      toast({
+        title: "Signup Failed",
+        description: "Could not connect to the server. Please try again later.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   const handleChange = (field: string, value: string) => {
@@ -140,8 +178,12 @@ export const Signup = () => {
                   </Link>
                 </Label>
               </div>
-              <Button type="submit" className="w-full primary-gradient">
-                Create Account
+              <Button 
+                type="submit" 
+                className="w-full primary-gradient"
+                disabled={isLoading}
+              >
+                {isLoading ? "Creating Account..." : "Create Account"}
               </Button>
             </form>
           </CardContent>

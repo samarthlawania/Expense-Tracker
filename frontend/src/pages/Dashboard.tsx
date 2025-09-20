@@ -1,21 +1,54 @@
+import { useState, useEffect } from "react";
 import { DollarSign, TrendingUp, CreditCard, AlertTriangle } from "lucide-react";
 import { StatCard } from "../components/ui/stat-card";
 import { ExpensePieChart } from "../components/charts/ExpensePiechart";
 import { SpendingTrendChart } from "../components/charts/SpendingTrenChart";
-import { dummyExpenses, categorySpending } from "../data/dummyData";
+import { api } from "../services/api";
 
 export const Dashboard = () => {
-  // Calculate summary stats
-  const currentMonthExpenses = dummyExpenses
-    .filter(expense => expense.type === 'expense')
-    .reduce((sum, expense) => sum + expense.amount, 0);
+  const [expenses, setExpenses] = useState([]);
+  const [loading, setLoading] = useState(true);
 
-  const currentMonthIncome = dummyExpenses
+  useEffect(() => {
+    const fetchExpenses = async () => {
+      try {
+        const data = await api.getExpenses();
+        setExpenses(data);
+      } catch (error) {
+        console.error('Failed to fetch expenses:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchExpenses();
+  }, []);
+
+  if (loading) {
+    return <div className="p-6">Loading...</div>;
+  }
+
+  // Calculate summary stats
+  const currentMonthExpenses = expenses
+    .filter(expense => expense.type === 'expense')
+    .reduce((sum, expense) => sum + parseFloat(expense.amount), 0);
+
+  const currentMonthIncome = expenses
     .filter(expense => expense.type === 'income')
-    .reduce((sum, expense) => sum + expense.amount, 0);
+    .reduce((sum, expense) => sum + parseFloat(expense.amount), 0);
 
   const remainingBudget = currentMonthIncome - currentMonthExpenses;
-  const topCategory = categorySpending[0];
+  
+  // Calculate category spending
+  const categorySpending = expenses
+    .filter(expense => expense.type === 'expense')
+    .reduce((acc, expense) => {
+      const category = expense.category || 'Other';
+      acc[category] = (acc[category] || 0) + parseFloat(expense.amount);
+      return acc;
+    }, {});
+  
+  const topCategory = Object.entries(categorySpending)
+    .sort(([,a], [,b]) => b - a)[0] || ['No expenses', 0];
 
   return (
     <div className="space-y-6 p-6">
@@ -47,8 +80,8 @@ export const Dashboard = () => {
         />
         <StatCard
           title="Top Category"
-          value={topCategory.name}
-          change={`$${topCategory.value.toLocaleString()} spent`}
+          value={topCategory[0]}
+          change={`$${topCategory[1].toLocaleString()} spent`}
           changeType="neutral"
           icon={CreditCard}
           variant="default"
@@ -74,7 +107,7 @@ export const Dashboard = () => {
         <div className="space-y-4">
           <h3 className="text-lg font-semibold">Recent Transactions</h3>
           <div className="space-y-3">
-            {dummyExpenses.slice(0, 5).map((expense) => (
+            {expenses.slice(0, 5).map((expense) => (
               <div
                 key={expense.id}
                 className="flex items-center justify-between rounded-lg border p-3 transition-colors hover:bg-accent/50"
@@ -90,10 +123,15 @@ export const Dashboard = () => {
                     ? 'text-success' 
                     : 'text-foreground'
                 }`}>
-                  {expense.type === 'income' ? '+' : '-'}${expense.amount.toLocaleString()}
+                  {expense.type === 'income' ? '+' : '-'}${parseFloat(expense.amount).toLocaleString()}
                 </div>
               </div>
             ))}
+            {expenses.length === 0 && (
+              <p className="text-center text-muted-foreground py-4">
+                No transactions yet. Add your first expense!
+              </p>
+            )}
           </div>
         </div>
       </div>
