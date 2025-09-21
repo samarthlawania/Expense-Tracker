@@ -13,7 +13,10 @@ const app = express();
 app.use(helmet());
 app.use(
   cors({
-    origin: [ 'http://localhost:8080', 'https://expense-tracker-gamma-coral.vercel.app' ],
+    origin: [
+      "http://localhost:8080",
+      "https://expense-tracker-prly-iu0cxxmie.vercel.app",
+    ],
   })
 );
 app.use(morgan('dev'));
