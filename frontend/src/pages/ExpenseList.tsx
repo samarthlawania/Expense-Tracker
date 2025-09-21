@@ -20,7 +20,7 @@ export const ExpenseList = () => {
     const fetchExpenses = async () => {
       try {
         const filters = {};
-        if (categoryFilter !== "all") filters.category = categoryFilter;
+        if (categoryFilter !== "all") (filters as any).category = categoryFilter;
         const data = await api.getExpenses(filters);
         setExpenses(data);
       } catch (error) {

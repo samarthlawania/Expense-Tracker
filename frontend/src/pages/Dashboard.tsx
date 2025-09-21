@@ -29,21 +29,21 @@ export const Dashboard = () => {
 
   // Calculate summary stats
   const currentMonthExpenses = expenses
-    .filter(expense => expense.type === 'expense')
-    .reduce((sum, expense) => sum + parseFloat(expense.amount), 0);
+    .filter((expense: any) => expense.type === 'expense')
+    .reduce((sum: number, expense: any) => sum + parseFloat(String(expense.amount)), 0);
 
   const currentMonthIncome = expenses
-    .filter(expense => expense.type === 'income')
-    .reduce((sum, expense) => sum + parseFloat(expense.amount), 0);
+    .filter((expense: any) => expense.type === 'income')
+    .reduce((sum: number, expense: any) => sum + parseFloat(String(expense.amount)), 0);
 
   const remainingBudget = currentMonthIncome - currentMonthExpenses;
   
   // Calculate category spending
   const categorySpending = expenses
-    .filter(expense => expense.type === 'expense')
-    .reduce((acc, expense) => {
+    .filter((expense: any) => expense.type === 'expense')
+    .reduce((acc: any, expense: any) => {
       const category = expense.category || 'Other';
-      acc[category] = (acc[category] || 0) + parseFloat(expense.amount);
+      acc[category] = (acc[category] || 0) + parseFloat(String(expense.amount));
       return acc;
     }, {});
   

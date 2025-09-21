@@ -32,11 +32,11 @@ export const SpendingTrendChart = () => {
       try {
         const expenses = await api.getExpenses();
         const monthlyData = expenses
-          .filter(expense => expense.type === 'expense')
-          .reduce((acc, expense) => {
+          .filter((expense: any) => expense.type === 'expense')
+          .reduce((acc: any, expense: any) => {
             const date = new Date(expense.date);
             const monthKey = date.toLocaleDateString('en-US', { month: 'short' });
-            acc[monthKey] = (acc[monthKey] || 0) + parseFloat(expense.amount);
+            acc[monthKey] = (acc[monthKey] || 0) + parseFloat(String(expense.amount));
             return acc;
           }, {});
         

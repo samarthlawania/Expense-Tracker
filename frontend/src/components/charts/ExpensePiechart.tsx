@@ -41,10 +41,10 @@ export const ExpensePieChart = () => {
       try {
         const expenses = await api.getExpenses();
         const categoryTotals = expenses
-          .filter(expense => expense.type === 'expense')
-          .reduce((acc, expense) => {
+          .filter((expense: any) => expense.type === 'expense')
+          .reduce((acc: any, expense: any) => {
             const category = expense.category || 'Other';
-            acc[category] = (acc[category] || 0) + parseFloat(expense.amount);
+            acc[category] = (acc[category] || 0) + parseFloat(String(expense.amount));
             return acc;
           }, {});
         
