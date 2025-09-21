@@ -39,9 +39,7 @@ app.use((req, res, next) => {
 app.use(errorHandler);
 
 // For Vercel deployment
-if (process.env.NODE_ENV === 'production') {
-  module.exports = app;
-} else {
+
   const PORT = process.env.PORT || 3000;
   
   sequelize
@@ -61,4 +59,3 @@ if (process.env.NODE_ENV === 'production') {
       console.error('Unable to connect to the database:', err);
       process.exit(1);
     });
-}
