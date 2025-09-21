@@ -52,10 +52,10 @@ if (process.env.NODE_ENV === 'production') {
     })
     .then(() => {
       console.log('Database synced successfully');
-      app.listen(PORT, () => {
-        console.log(`Server running on port ${PORT}`);
-        console.log(`Environment: ${process.env.NODE_ENV}`);
-      });
+      // app.listen(PORT, () => {
+      //   console.log(`Server running on port ${PORT}`);
+      //   console.log(`Environment: ${process.env.NODE_ENV}`);
+      // });
     })
     .catch((err) => {
       console.error('Unable to connect to the database:', err);
