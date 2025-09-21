@@ -13,7 +13,7 @@ const app = express();
 app.use(helmet());
 app.use(
   cors({
-    origin: [ 'http://localhost:3000', 'https://expense-tracker-gamma-coral.vercel.app' ],
+    origin: [ 'http://localhost:8080', 'https://expense-tracker-gamma-coral.vercel.app' ],
   })
 );
 app.use(morgan('dev'));
@@ -50,10 +50,10 @@ app.use(errorHandler);
     })
     .then(() => {
       console.log('Database synced successfully');
-      // app.listen(PORT, () => {
-      //   console.log(`Server running on port ${PORT}`);
-      //   console.log(`Environment: ${process.env.NODE_ENV}`);
-      // });
+      app.listen(PORT, () => {
+        console.log(`Server running on port ${PORT}`);
+        console.log(`Environment: ${process.env.NODE_ENV}`);
+      });
     })
     .catch((err) => {
       console.error('Unable to connect to the database:', err);
