@@ -1,7 +1,7 @@
 const sequelize = require('../config/db');
 const User = require('./User');
-const Expense = require('./Expense');
-const Budget = require('./Budget');
+const Expense = require('./expense');
+const Budget = require('./budget');
 
 // Define associations
 User.hasMany(Expense, { foreignKey: 'userId' });
