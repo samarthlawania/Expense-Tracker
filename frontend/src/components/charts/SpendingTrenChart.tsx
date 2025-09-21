@@ -1,6 +1,7 @@
+import { useState, useEffect } from "react";
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from "recharts";
 import { Card, CardContent, CardHeader, CardTitle } from "../../components/ui/card";
-import { monthlyTrends } from "../../data/dummyData";
+import { api } from "../../services/api";
 
 interface CustomTooltipProps {
   active?: boolean;
@@ -23,6 +24,36 @@ const CustomTooltip = ({ active, payload, label }: CustomTooltipProps) => {
 };
 
 export const SpendingTrendChart = () => {
+  const [monthlyTrends, setMonthlyTrends] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchExpenses = async () => {
+      try {
+        const expenses = await api.getExpenses();
+        const monthlyData = expenses
+          .filter(expense => expense.type === 'expense')
+          .reduce((acc, expense) => {
+            const date = new Date(expense.date);
+            const monthKey = date.toLocaleDateString('en-US', { month: 'short' });
+            acc[monthKey] = (acc[monthKey] || 0) + parseFloat(expense.amount);
+            return acc;
+          }, {});
+        
+        const chartData = Object.entries(monthlyData).map(([month, amount]) => ({
+          month,
+          amount: Math.round(amount)
+        }));
+        
+        setMonthlyTrends(chartData);
+      } catch (error) {
+        console.error('Failed to fetch expenses:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchExpenses();
+  }, []);
   return (
     <Card className="card-gradient fade-in">
       <CardHeader>
@@ -30,6 +61,15 @@ export const SpendingTrendChart = () => {
       </CardHeader>
       <CardContent>
         <div className="h-[300px]">
+          {loading ? (
+            <div className="flex items-center justify-center h-full text-muted-foreground">
+              Loading chart data...
+            </div>
+          ) : monthlyTrends.length === 0 ? (
+            <div className="flex items-center justify-center h-full text-muted-foreground">
+              No expense data available
+            </div>
+          ) : (
           <ResponsiveContainer width="100%" height="100%">
             <LineChart data={monthlyTrends}>
               <CartesianGrid strokeDasharray="3 3" stroke="hsl(220, 13%, 91%)" />
@@ -54,6 +94,7 @@ export const SpendingTrendChart = () => {
               />
             </LineChart>
           </ResponsiveContainer>
+          )}
         </div>
       </CardContent>
     </Card>

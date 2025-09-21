@@ -1,5 +1,6 @@
 import { Outlet, Link, useNavigate } from "react-router-dom";
 import { Button } from "../ui/button";
+import { ThemeToggle } from "../ui/theme-toggle";
 import { 
   LayoutDashboard, 
   Plus, 
@@ -61,7 +62,8 @@ export const Layout = () => {
             </Link>
           </nav>
 
-          <div className="ml-auto">
+          <div className="ml-auto flex items-center space-x-2">
+            <ThemeToggle />
             <Button variant="ghost" size="sm" onClick={handleLogout}>
               <LogOut className="h-4 w-4 mr-2" />
               Logout

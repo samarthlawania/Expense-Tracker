@@ -118,5 +118,21 @@ export const api = {
       headers: getAuthHeaders()
     });
     return response.json();
+  },
+
+  // OCR endpoint for receipt processing
+  extractReceiptData: async (file: File) => {
+    const formData = new FormData();
+    formData.append('receipt', file);
+    
+    const token = localStorage.getItem('token');
+    const response = await fetch(`${API_BASE_URL}/expenses/extract-receipt`, {
+      method: 'POST',
+      headers: {
+        ...(token && { Authorization: `Bearer ${token}` })
+      },
+      body: formData
+    });
+    return response.json();
   }
 };

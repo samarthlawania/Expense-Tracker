@@ -39,6 +39,17 @@ exports.upload = async (req, res, next) => {
   } catch (err) { next(err); }
 };
 
+exports.extractReceipt = async (req, res, next) => {
+  try {
+    const file = req.file;
+    if (!file) return res.status(400).json({ message: 'No receipt image uploaded' });
+    
+    const ocrService = require('../services/ocr.service');
+    const extractedData = await ocrService.extractReceiptData(file);
+    res.json(extractedData);
+  } catch (err) { next(err); }
+};
+
 exports.export = async (req, res, next) => {
   try {
     const format = req.query.format || 'xlsx';

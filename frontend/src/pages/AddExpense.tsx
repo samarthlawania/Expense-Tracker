@@ -79,9 +79,37 @@ export const AddExpense = () => {
     setFormData(prev => ({ ...prev, [field]: value }));
   };
 
-  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const selectedFile = e.target.files?.[0] || null;
     setFile(selectedFile);
+    
+    if (selectedFile && selectedFile.type.startsWith('image/')) {
+      setIsLoading(true);
+      try {
+        const extractedData = await api.extractReceiptData(selectedFile);
+        if (extractedData) {
+          setFormData(prev => ({
+            ...prev,
+            amount: extractedData.amount || prev.amount,
+            description: extractedData.description || prev.description,
+            category: extractedData.category || prev.category,
+            date: extractedData.date || prev.date
+          }));
+          toast({
+            title: "Receipt Processed",
+            description: "Form fields auto-filled from receipt",
+          });
+        }
+      } catch (error) {
+        toast({
+          title: "Processing Failed",
+          description: "Could not extract data from receipt",
+          variant: "destructive",
+        });
+      } finally {
+        setIsLoading(false);
+      }
+    }
   };
 
   return (

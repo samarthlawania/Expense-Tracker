@@ -3,11 +3,16 @@ const aiService = require('../services/ai.service');
 
 exports.getInsights = async (req,res,next) => {
   try {
-    // gather recent transactions for user (e.g., last 90 days)
     const userId = req.user.id;
     const expenses = await Expense.findAll({ where: { userId }, order: [['date','DESC']], limit: 200 });
-    const descriptions = expenses.map(e => `${e.date} ${e.amount} ${e.description}`);
-    // send to AI summarizer call
+    
+    // Format expense data with categories for better AI analysis
+    const descriptions = expenses.map(e => {
+      const category = e.category || 'Other';
+      const type = e.type || 'expense';
+      return `${e.date} - ${category} - $${e.amount} - ${e.description || 'No description'} (${type})`;
+    });
+    
     const insights = await aiService.summarizeSpendingPatterns(descriptions);
     res.json({ insights });
   } catch (err) { next(err); }

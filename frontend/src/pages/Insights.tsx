@@ -1,3 +1,4 @@
+import { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "../components/ui/card";
 import { Badge } from "../components/ui/badge";
 import { Button } from "../components/ui/button";
@@ -10,9 +11,34 @@ import {
   Sparkles,
   RefreshCw
 } from "lucide-react";
-import { aiInsights, budgetAlerts } from "../data/dummyData";
+import { api } from "../services/api";
 
 export const Insights = () => {
+  const [insights, setInsights] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [refreshing, setRefreshing] = useState(false);
+
+  const fetchInsights = async () => {
+    try {
+      const data = await api.getInsights();
+      console.log('Insights data:', data);
+      setInsights(data.insights);
+    } catch (error) {
+      console.error('Failed to fetch insights:', error);
+    } finally {
+      setLoading(false);
+      setRefreshing(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchInsights();
+  }, []);
+
+  const handleRefresh = () => {
+    setRefreshing(true);
+    fetchInsights();
+  };
   const getInsightIcon = (type: string) => {
     switch (type) {
       case 'tip':
@@ -63,80 +89,98 @@ export const Insights = () => {
             Personalized financial insights and recommendations powered by AI.
           </p>
         </div>
-        <Button variant="outline" className="space-x-2">
-          <RefreshCw className="h-4 w-4" />
-          <span>Refresh Insights</span>
+        <Button variant="outline" className="space-x-2" onClick={handleRefresh} disabled={refreshing}>
+          <RefreshCw className={`h-4 w-4 ${refreshing ? 'animate-spin' : ''}`} />
+          <span>{refreshing ? 'Refreshing...' : 'Refresh Insights'}</span>
         </Button>
       </div>
 
-      {/* Budget Alerts */}
-      <Card className="card-gradient border-warning/20 bg-warning/5">
-        <CardHeader>
-          <CardTitle className="flex items-center space-x-2 text-warning">
-            <AlertTriangle className="h-5 w-5" />
-            <span>Budget Alerts</span>
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="space-y-3">
-            {budgetAlerts.map((alert) => (
-              <div
-                key={alert.id}
-                className="flex items-center justify-between rounded-lg border border-warning/20 bg-background p-4"
-              >
-                <div className="space-y-1">
-                  <div className="flex items-center space-x-2">
-                    <span className="font-medium">{alert.category}</span>
-                    <Badge variant={getAlertVariant(alert.type)}>
-                      {alert.percentage}%
-                    </Badge>
-                  </div>
-                  <p className="text-sm text-muted-foreground">
-                    {alert.message}
-                  </p>
-                </div>
-                <Button size="sm" variant="outline">
-                  View Details
-                </Button>
-              </div>
-            ))}
-          </div>
-        </CardContent>
-      </Card>
-
       {/* AI Insights */}
-      <div className="grid gap-4 md:grid-cols-2">
-        {aiInsights.map((insight) => {
-          const Icon = getInsightIcon(insight.type);
-          const iconColor = getInsightColor(insight.type);
-          
-          return (
-            <Card key={insight.id} className="card-gradient fade-in">
+      {loading ? (
+        <Card className="card-gradient">
+          <CardContent className="p-6">
+            <div className="text-center py-8 text-muted-foreground">
+              Loading insights...
+            </div>
+          </CardContent>
+        </Card>
+      ) : insights ? (
+        <div className="space-y-6">
+          {/* Top Categories */}
+          {insights.topCategories && (
+            <Card className="card-gradient">
               <CardHeader>
                 <CardTitle className="flex items-center space-x-2">
-                  <Icon className={`h-5 w-5 ${iconColor}`} />
-                  <span>{insight.title}</span>
+                  <TrendingUp className="h-5 w-5 text-primary" />
+                  <span>Top Spending Categories</span>
                 </CardTitle>
               </CardHeader>
               <CardContent>
                 <div className="space-y-3">
-                  <p className="text-sm text-muted-foreground">
-                    {insight.message}
-                  </p>
-                  <div className="flex items-center justify-between">
-                    <Badge variant="outline">
-                      {insight.type.charAt(0).toUpperCase() + insight.type.slice(1)}
-                    </Badge>
-                    <span className="text-xs text-muted-foreground">
-                      {new Date(insight.date).toLocaleDateString()}
-                    </span>
-                  </div>
+                  {insights.topCategories.map((category, index) => (
+                    <div key={index} className="flex items-center justify-between">
+                      <span className="font-medium">{category.name}</span>
+                      <Badge variant="outline">{category.percentage}%</Badge>
+                    </div>
+                  ))}
                 </div>
               </CardContent>
             </Card>
-          );
-        })}
-      </div>
+          )}
+
+          {/* Recurring Subscriptions */}
+          {insights.recurringSubscriptions && (
+            <Card className="card-gradient border-warning/20 bg-warning/5">
+              <CardHeader>
+                <CardTitle className="flex items-center space-x-2 text-warning">
+                  <AlertTriangle className="h-5 w-5" />
+                  <span>Recurring Subscriptions</span>
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-2">
+                  {insights.recurringSubscriptions.map((sub, index) => (
+                    <div key={index} className="text-sm">
+                      {sub}
+                    </div>
+                  ))}
+                </div>
+              </CardContent>
+            </Card>
+          )}
+
+          {/* Suggestions */}
+          {insights.suggestions && (
+            <Card className="card-gradient">
+              <CardHeader>
+                <CardTitle className="flex items-center space-x-2">
+                  <Lightbulb className="h-5 w-5 text-primary" />
+                  <span>AI Suggestions</span>
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-2">
+                  {insights.suggestions.map((suggestion, index) => (
+                    <div key={index} className="text-sm text-muted-foreground">
+                      • {suggestion}
+                    </div>
+                  ))}
+                </div>
+              </CardContent>
+            </Card>
+          )}
+        </div>
+      ) : (
+        <Card className="card-gradient">
+          <CardContent className="p-6">
+            <div className="text-center py-8 text-muted-foreground">
+              No insights available. Add some expenses to get AI-powered insights.
+            </div>
+          </CardContent>
+        </Card>
+      )}
+
+
 
       {/* AI Features Preview */}
       <Card className="card-gradient border-primary/20 bg-primary/5">

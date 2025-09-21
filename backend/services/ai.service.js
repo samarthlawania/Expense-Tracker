@@ -1,5 +1,5 @@
-const OpenAI = require('openai');
-const client = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
+const { GoogleGenerativeAI } = require('@google/generative-ai');
+const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
 
 // prompt function to categorize a list of short transactions
 async function categorizeTransactions(items) {
@@ -16,15 +16,9 @@ Here are the descriptions:
 ${descriptions}
 `;
 
-  const resp = await client.chat.completions.create({
-    model: "gpt-4o-mini", // adapt to available model; the example name may differ
-    messages: [{ role: 'user', content: prompt }],
-    max_tokens: 800,
-    temperature: 0.0
-  });
-
-  // get content - this will vary by SDK version
-  const content = resp.choices[0].message.content;
+  const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
+  const result = await model.generateContent(prompt);
+  const content = result.response.text();
   // Try to parse JSON from content
   let parsed;
   try {
@@ -49,19 +43,16 @@ ${descriptions}
 
 async function summarizeSpendingPatterns(descriptions) {
   const prompt = `You are given a list of transactions. Analyze and provide:
-- Top 3 spending categories and percentages
-- Detect recurring subscriptions and list them
-- Suggestions to reduce spending
-Return JSON with keys: topCategories, recurringSubscriptions, suggestions.
+- Top 3 spending categories with names and percentages (format: [{"name": "Food & Dining", "percentage": "45.2"}])
+- Detect recurring subscriptions and list them as strings
+- Suggestions to reduce spending as strings
+Return JSON with keys: topCategories (array of objects), recurringSubscriptions (array of strings), suggestions (array of strings).
 Transactions:
 ${descriptions.join('\n')}
 `;
-  const resp = await client.chat.completions.create({
-    model: "gpt-4o-mini",
-    messages: [{ role: 'user', content: prompt }],
-    temperature: 0.0
-  });
-  const content = resp.choices[0].message.content;
+  const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
+  const result = await model.generateContent(prompt);
+  const content = result.response.text();
   try {
     return JSON.parse(content);
   } catch(e) {
