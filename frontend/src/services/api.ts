@@ -1,4 +1,4 @@
-const API_BASE_URL =  'https://expense-tracker-gamma-coral.vercel.app/api'; // Replace with your backend URL
+const API_BASE_URL =  'https://expense-tracker-4c77.onrender.com/api'; // Replace with your backend URL
 
 
 const getAuthHeaders = () => {
