@@ -38,24 +38,27 @@ app.use((req, res, next) => {
 // Global error handler
 app.use(errorHandler);
 
-// For Vercel deployment
+const PORT = process.env.PORT || 3000;
 
-  const PORT = process.env.PORT || 3000;
-  
-  sequelize
-    .authenticate()
-    .then(() => {
-      console.log('Database connection established successfully.');
-      return sequelize.sync();  
-    })
-    .then(() => {
-      console.log('Database synced successfully');
-      app.listen(PORT, () => {
-        console.log(`Server running on port ${PORT}`);
-        console.log(`Environment: ${process.env.NODE_ENV}`);
-      });
-    })
-    .catch((err) => {
-      console.error('Unable to connect to the database:', err);
-      process.exit(1);
-    });
+// Start server first to satisfy Render port requirements
+app.listen(PORT, '0.0.0.0', () => {
+  console.log(`Server running on port ${PORT}`);
+  console.log(`Environment: ${process.env.NODE_ENV}`);
+});
+
+// Initialize database connection in background
+sequelize
+  .authenticate()
+  .then(() => {
+    console.log('Database connection established successfully.');
+    return sequelize.sync();
+  })
+  .then(() => {
+    console.log('Database synced successfully');
+  })
+  .catch((err) => {
+    console.error('Database connection failed:', err.message);
+    console.log('Server running without database connection');
+  });
+
+module.exports = app;
