@@ -5,9 +5,22 @@ import { Input } from "../components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "../components/ui/select";
 import { Badge } from "../components/ui/badge";
 import { Search, Download, Filter, Plus } from "lucide-react";
-import { categories } from "../data/dummyData";
+
 import { Link } from "react-router-dom";
 import { api } from "../services/api";
+
+const categories = [
+  'Food & Dining',
+  'Transportation', 
+  'Shopping',
+  'Entertainment',
+  'Bills & Utilities',
+  'Health & Fitness',
+  'Travel',
+  'Education',
+  'Income',
+  'Other'
+];
 
 export const ExpenseList = () => {
   const [searchTerm, setSearchTerm] = useState("");

@@ -2,7 +2,7 @@ import { Bell, Search, Settings, User } from "lucide-react";
 import { Button } from "../../components/ui/button";
 import { Input } from "../../components/ui/input";
 import { Avatar, AvatarFallback } from "../../components/ui/avatar";
-import { currentUser } from "../../data/dummyData"; 
+ 
 import { ThemeToggle } from "../../components/ui/theme-toggle";
 
 interface NavbarProps {
@@ -10,6 +10,9 @@ interface NavbarProps {
 }
 
 export const Navbar = ({ onToggleSidebar }: NavbarProps) => {
+  const user = JSON.parse(localStorage.getItem('user') || '{}');
+  const userInitials = user.name ? user.name.split(' ').map((n: string) => n[0]).join('') : 'U';
+  
   return (
     <header className="sticky top-0 z-40 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
       <div className="flex h-16 items-center justify-between px-4 md:px-6">
@@ -44,11 +47,11 @@ export const Navbar = ({ onToggleSidebar }: NavbarProps) => {
           <div className="flex items-center space-x-2">
             <Avatar className="h-8 w-8">
               <AvatarFallback className="bg-primary text-primary-foreground">
-                {currentUser.avatar}
+                {userInitials}
               </AvatarFallback>
             </Avatar>
             <div className="hidden sm:block">
-              <p className="text-sm font-medium">{currentUser.name}</p>
+              <p className="text-sm font-medium">{user.name || 'User'}</p>
             </div>
           </div>
         </div>

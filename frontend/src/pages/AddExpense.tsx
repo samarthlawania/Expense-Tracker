@@ -7,9 +7,22 @@ import { Label } from "../components/ui/label";
 import { Textarea } from "../components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "../components/ui/select";
 import { Upload, Plus } from "lucide-react";
-import { categories } from "../data/dummyData";
+
 import { useToast } from "../hooks/use-toast";
 import { api } from "../services/api";
+
+const categories = [
+  'Food & Dining',
+  'Transportation', 
+  'Shopping',
+  'Entertainment',
+  'Bills & Utilities',
+  'Health & Fitness',
+  'Travel',
+  'Education',
+  'Income',
+  'Other'
+];
 
 export const AddExpense = () => {
   const [formData, setFormData] = useState({
