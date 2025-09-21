@@ -42,7 +42,7 @@ export const SpendingTrendChart = () => {
         
         const chartData = Object.entries(monthlyData).map(([month, amount]) => ({
           month,
-          amount: Math.round(amount)
+          amount: Math.round(amount as number)
         }));
         
         setMonthlyTrends(chartData);

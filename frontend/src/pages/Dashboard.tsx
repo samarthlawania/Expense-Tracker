@@ -48,7 +48,7 @@ export const Dashboard = () => {
     }, {});
   
   const topCategory = Object.entries(categorySpending)
-    .sort(([,a], [,b]) => b - a)[0] || ['No expenses', 0];
+    .sort(([,a], [,b]) => (b as number) - (a as number))[0] || ['No expenses', 0];
 
   return (
     <div className="space-y-6 p-6">
@@ -81,7 +81,7 @@ export const Dashboard = () => {
         <StatCard
           title="Top Category"
           value={topCategory[0]}
-          change={`$${topCategory[1].toLocaleString()} spent`}
+          change={`$${(topCategory[1] as number).toLocaleString()} spent`}
           changeType="neutral"
           icon={CreditCard}
           variant="default"
