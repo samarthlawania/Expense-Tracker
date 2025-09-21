@@ -51,7 +51,7 @@ sequelize
   .authenticate()
   .then(() => {
     console.log('Database connection established successfully.');
-    return sequelize.sync();
+    return sequelize.sync({ alter: false });
   })
   .then(() => {
     console.log('Database synced successfully');
@@ -59,6 +59,8 @@ sequelize
   .catch((err) => {
     console.error('Database connection failed:', err.message);
     console.log('Server running without database connection');
+    // Set a flag to indicate database is unavailable
+    global.dbAvailable = false;
   });
 
 module.exports = app;

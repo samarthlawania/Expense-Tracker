@@ -12,15 +12,18 @@ const sequelize = process.env.DATABASE_URL
           rejectUnauthorized: false
         },
         connectTimeout: 60000,
-        socketPath: undefined
+        family: 4
       },
       pool: {
-        max: 5,
+        max: 3,
         min: 0,
         acquire: 30000,
         idle: 10000
       },
-      logging: false,
+      logging: console.log,
+      retry: {
+        max: 3
+      }
     })
   : new Sequelize(
       process.env.DB_NAME,
