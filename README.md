@@ -1,5 +1,7 @@
 # Smart Expense Tracker with AI Insights
 
+Deployed link:-  https://expense-tracker-prly-8wiyi5rsy.vercel.app/login
+
 A full-stack expense tracking application with AI-powered categorization and insights.
 
 ## Features

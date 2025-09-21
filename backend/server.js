@@ -15,7 +15,7 @@ app.use(
   cors({
     origin: [
       "http://localhost:8080",
-      "https://expense-tracker-prly-mg85myn15.vercel.app",
+      "https://expense-tracker-prly-8wiyi5rsy.vercel.app/",
     ],
   })
 );
